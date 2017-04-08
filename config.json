@@ -1,0 +1,13 @@
+{
+    "scenes": [{
+        "name": "llbxsdg",
+        "index_name_perfix": "e2e_llbxsdg-",
+        "cron": "*/1 * * * * *",
+        "link":[
+          {
+            "name":"sjf",
+            "index_name_perfix":"llbxsdg_sdq-"
+          }
+        ]
+    }]
+}
