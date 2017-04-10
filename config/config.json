@@ -1,0 +1,76 @@
+{
+    
+    "scenes": [{
+        
+        "name": "llbxsdg",
+        
+        "index_name_perfix": "e2e_llbxsdg-",
+        
+        "cron": "*/1 * * * * *",
+        
+        "time_range":180,
+        
+        
+        
+        
+        "taches":{
+          
+          "sdq" : {
+            "index_name_perfix":"llbxsdg_sdq-",
+            "time_field":"order_time",
+            "id_field":"shopping_car_sn"
+          },
+          "scsb" : {
+            "index_name_perfix":"llbxsdg_scsb-",
+            "time_field":"msg_arrive_time",
+            "id_field":"shopping_car_sn"
+          },
+          "scrm" : {
+            "index_name_perfix":"llbxsdg_scrm-",
+            "time_field":"order_submit_time",
+            "id_field":"order_number"
+          },
+          "sjf" : {
+            "index_name_perfix":"llbxsdg_sjf-",
+            "time_field":"order_effect_time",
+            "id_field":"order_number"
+          }
+
+        },
+        
+        "links":[
+          
+          {
+            "from":{
+            "tache":"sdq",
+            "field":"shopping_car_sn"
+          },
+          "to":{
+            "tache":"scsb",
+            "field":"shopping_car_sn"
+          }},
+
+          
+          {
+            "from":{
+            "tache":"scsb",
+            "field":"shopping_car_sn"
+          },
+          "to":{
+            "tache":"scrm",
+            "field":"order_number"
+          }},
+
+          
+          {
+            "from":{
+            "tache":"scrm",
+            "field":"order_number"
+          },
+          "to":{
+            "tache":"sjf",
+            "field":"order_number"
+          }}
+        ]
+    }]
+}

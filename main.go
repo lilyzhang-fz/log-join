@@ -2,53 +2,64 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"time"
 
-	"github.com/fsnotify/fsnotify"
-	"github.com/robfig/cron"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/viper"
 )
 
 var a int
 var finish bool
 
+var config Config
+
 func main() {
-	i := 0
-	c := cron.New()
-	spec := "*/1 * * * * *"
-	
-	c.AddFunc(spec, func() {
-		i++
-		time.Sleep(5 * time.Second)
-		log.Println("start1 - ", i)
-		c.Entries()
-	})
 
-	c.Start()
+	// i := 0
+	// c := cron.New()
 
-	select {} // block forever
+	// spec := "*/1 * * * * *"
+	// c.AddFunc(spec, func() {
+	// 	i++
+	// 	time.Sleep(5 * time.Second)
+	// 	log.Println("start1 - ", i)
+	// 	c.Entries()
+	// })
+
+	// c.Start()
+
+	// select {} // block forever
+	spew.Dump(config)
+}
+
+func init() {
+	getConfig()
+	setDefaultValue()
 }
 func getConfig() {
-	viper.SetDefault("ContentDir", "content")
-	viper.SetDefault("LayoutDir", "layouts")
-	viper.SetDefault("Taxonomies", map[string]string{"tag": "tags", "category": "categories"})
 
-	viper.SetConfigName("config")          // name of config file (without extension)
-	viper.AddConfigPath("/etc/log-join/")  // path to look for the config file in
-	viper.AddConfigPath("$HOME/.log-join") // call multiple times to add many search paths
-	viper.AddConfigPath(".")               // optionally look for config in the working directory
-	err := viper.ReadInConfig()            // Find and read the config file
-	if err != nil {                        // Handle errors reading the config file
+	viper.SetConfigName("config") // name of config file (without extension)
+
+	viper.AddConfigPath("./config") // optionally look for config in the working directory
+	err := viper.ReadInConfig()     // Find and read the config file
+	if err != nil {                 // Handle errors reading the config file
 		panic(fmt.Errorf("fatal error config file: %s ", err))
 	}
+	viper.Unmarshal(&config)
 
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-	})
+}
 
+func setDefaultValue() {
+	setWorker()
+}
+
+// 默认 worker = 5
+func setWorker() {
+	for i := 0; i < len(config.Scenes); i++ {
+		if config.Scenes[i].Worker <= 0 {
+			config.Scenes[i].Worker = 5
+		}
+	}
 }
 
 func logJoin() {
