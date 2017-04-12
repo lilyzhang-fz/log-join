@@ -1,10 +1,16 @@
-hash: 450cb4450a292f24396d650b2da8b465e626ccc1c79cd49a45e02da06c6ee9bb
-updated: 2017-03-31T15:01:23.573992138+08:00
+hash: 64aba9a0f0ad6788479e84ed39cd2b03eb903599635ba9ceeb8e25072a1ee311
+updated: 2017-04-12T11:52:12.855440588+08:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
 - name: github.com/fsnotify/fsnotify
   version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/gogap/env_json
+  version: 86150085ddbeee9e9a1808c00d19b4310aa8f7fe
+- name: github.com/gogap/env_strings
+  version: 65990cae6fff8fd03f408f2410198a6f755b6b53
+- name: github.com/gogap/logrus_mate
+  version: a3b9903318290a10fb899e89239a75d1341643b2
 - name: github.com/hashicorp/hcl
   version: 630949a3c5fa3c613328e1b8256052cbc2327c9b
   subpackages:
@@ -16,6 +22,8 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/hoisie/redis
+  version: b5c6e81454e0395c280f220d82a6854fd0fcf42e
 - name: github.com/magiconair/properties
   version: 51463bfca2576e06c62a8504b5c0f06d61312647
 - name: github.com/mitchellh/mapstructure
@@ -26,6 +34,8 @@ imports:
   version: e32a2e04744250647a72bf17da1b09befc03b6b1
 - name: github.com/robfig/cron
   version: b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4
+- name: github.com/Sirupsen/logrus
+  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/afero
   version: 9be650865eab0c12963d8753212f4f9c66cdcf12
   subpackages:

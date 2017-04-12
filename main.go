@@ -2,39 +2,80 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"os"
+	"path"
+	"time"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/Sirupsen/logrus"
+	"github.com/gogap/logrus_mate"
+	"github.com/robfig/cron"
 	"github.com/spf13/viper"
 )
 
 var a int
 var finish bool
-
 var config Config
+var filepath string
+var logger *logrus.Logger
 
 func main() {
+	logger.Info("开始调度")
+	for i := 0; i < len(config.Scenes); i++ {
+		logger.Info("创建新 goroutine ", config.Scenes[i].Name)
+		go newScene(config.Scenes[i])
+	}
+	select {}
+}
 
-	// i := 0
-	// c := cron.New()
-
-	// spec := "*/1 * * * * *"
-	// c.AddFunc(spec, func() {
-	// 	i++
-	// 	time.Sleep(5 * time.Second)
-	// 	log.Println("start1 - ", i)
-	// 	c.Entries()
-	// })
-
-	// c.Start()
-
-	// select {} // block forever
-	spew.Dump(config)
+func newScene(s Scene) {
+	Running := false
+	c := cron.New()
+	logger.Info("cron = ", s.Cron)
+	c.AddFunc(s.Cron, func() {
+		if Running {
+			logger.Info("正在执行中，放弃此批次")
+		} else {
+			logger.Info("开始执行")
+			Running = true
+			time.Sleep(time.Second * 3)
+			Running = false
+			logger.Info("执行结束")
+		}
+	})
+	c.Start()
 }
 
 func init() {
+	// 获取执行路径
+	getFilePath()
+
+	// 设置 logger
+	setLogger()
+
+	// 获取场景配置
 	getConfig()
+
+	// 设置默认值
 	setDefaultValue()
+}
+func getFilePath() {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	filepath = path.Dir(ex)
+}
+
+func setLogger() {
+	mateConf, err := logrus_mate.LoadLogrusMateConfig(fmt.Sprintf("%s/%s", filepath, "config/log.config"))
+	if err != nil {
+		panic(fmt.Errorf("can not read log config fileL: %s", err))
+	}
+	newMate, err := logrus_mate.NewLogrusMate(mateConf)
+	if err != nil {
+		panic(fmt.Errorf("can not read log config fileL: %s", err))
+	}
+	logger = newMate.Logger("main")
 }
 func getConfig() {
 
@@ -62,28 +103,28 @@ func setWorker() {
 	}
 }
 
-func logJoin() {
-	c := make(chan int)
-	for index := 0; index < 20; index++ {
+// func logJoin() {
+// 	c := make(chan int)
+// 	for index := 0; index < 20; index++ {
 
-		go work(c)
-	}
-	for {
-		a++
-		c <- a
-	}
-}
-func work(c chan int) {
-	for {
-		s := <-c
+// 		go work(c)
+// 	}
+// 	for {
+// 		a++
+// 		c <- a
+// 	}
+// }
+// func work(c chan int) {
+// 	for {
+// 		s := <-c
 
-		get(s)
+// 		get(s)
 
-	}
-}
+// 	}
+// }
 
-func get(s int) {
-	fmt.Printf("开始获取%v\n", s)
-	http.Get("http://127.0.0.1:8080/sleep?time=3")
-	fmt.Printf("结束获取%v\n", s)
-}
+// func get(s int) {
+// 	fmt.Printf("开始获取%v\n", s)
+// 	http.Get("http://127.0.0.1:8080/sleep?time=3")
+// 	fmt.Printf("结束获取%v\n", s)
+// }

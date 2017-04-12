@@ -1,15 +1,18 @@
 {
-    
+    // 场景列表
     "scenes": [{
-        
+        // 场景名称
         "name": "llbxsdg",
-        
+        // 串联后日志存储路径
         "index_name_perfix": "e2e_llbxsdg-",
-        
-        "cron": "* * * * * *",
-        
+        // 定时任务执行
+        "cron": "*/1 * * * * *",
+        // 检索的时间范围
         "time_range":180,
-        
+        // 启动多少个并发进程用于串联数据
+        // "worker":5,
+        // 标识起始节点，可省略
+        // "first_tache":"sjf",
         "taches":{
           
           "sdq" : {
@@ -34,39 +37,39 @@
           }
 
         },
-        
+        // links 用于描述环节间的联系（虚拟的有向无环图）
         "links":[
-
+          // 省电渠 到 省 CSB
           {
             "from":{
             "tache":"sdq",
-            "field":"shopping_car_sn"
+            "tache_id":"shopping_car_sn"
           },
           "to":{
             "tache":"scsb",
-            "field":"shopping_car_sn"
+            "tache_id":"shopping_car_sn"
           }},
 
-          
+          // 省 CSB 到 省 CRM
           {
             "from":{
             "tache":"scsb",
-            "field":"shopping_car_sn"
+            "tache_id":"shopping_car_sn"
           },
           "to":{
             "tache":"scrm",
-            "field":"order_number"
+            "tache_id":"order_number"
           }},
 
-          
+          // 省 CRM 到 省计费
           {
             "from":{
             "tache":"scrm",
-            "field":"order_number"
+            "tache_id":"order_number"
           },
           "to":{
             "tache":"sjf",
-            "field":"order_number"
+            "tache_id":"order_number"
           }}
         ]
     }]
