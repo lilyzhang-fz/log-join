@@ -5,8 +5,11 @@
         "name": "llbxsdg",
         
         "index_name_perfix": "e2e_llbxsdg-",
+
+        "es_url":["http://127.0.0.1:9200"],
         
-        "cron": "* * * * * *",
+        "cron": "*/10 * * * * *",
+        "worker":1,
         
         "time_range":180,
         
@@ -55,7 +58,7 @@
           },
           "to":{
             "tache":"scrm",
-            "field":"order_number"
+            "field":"shopping_car_sn"
           }},
 
           

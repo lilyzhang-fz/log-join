@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gogap/logrus_mate"
 	"github.com/robfig/cron"
 	"github.com/spf13/viper"
@@ -17,8 +20,10 @@ var finish bool
 var config Config
 var filepath string
 var logger *logrus.Logger
+var cronList []*cron.Cron
 
 func main() {
+	go listenDownSignal()
 	logger.Info("开始调度")
 	for i := 0; i < len(config.Scenes); i++ {
 		logger.Info("创建新 goroutine ", config.Scenes[i].Name)
@@ -27,19 +32,52 @@ func main() {
 	select {}
 }
 
-func newScene(s Scene) {
-	Running := false
+func listenDownSignal() {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+	<-ch
+	for _, v := range cronList {
+		logger.Debug("开始停止定时任务")
+		v.Stop()
+		logger.Debug("定时任务停止完成")
+	}
+
+	for {
+		running := 0
+		for _, s := range config.Scenes {
+			if s.Running == true {
+				running++
+				logger.Infof("场景 '%s' 还在运行中,还有 %d 条记录待合并", s.Name, len(s.Hits))
+			}
+		}
+		if running == 0 {
+			logger.Info("所有场景都已经结束，准备退出程序")
+			os.Exit(0)
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+}
+
+func newScene(s *Scene) {
+
 	c := cron.New()
-	logger.Info("cron = ", s.Cron)
+	// 添加到列表中
+	s.Running = false
+	// fmt.Printf("%p", &s.Running)
+	cronList = append(cronList, c)
+	logger.Infof("%s 周期配置为 '%s' ", s.Name, s.Cron)
 	c.AddFunc(s.Cron, func() {
-		if Running {
-			logger.Info("正在执行中，放弃此批次")
+		// fmt.Printf("%p", &s.Running)
+		if s.Running {
+			logger.Infof("正在执行中，放弃此批次-场景名称（%s）", s.Name)
 		} else {
-			logger.Info("开始执行")
-			Running = true
-			time.Sleep(time.Second * 3)
-			Running = false
-			logger.Info("执行结束")
+			logger.Infof("开始执行-场景名称（%s）", s.Name)
+			s.Running = true
+			s.Join()
+			s.Running = false
+			logger.Infof("执行结束-场景名称（%s）", s.Name)
 		}
 	})
 	c.Start()
@@ -57,6 +95,23 @@ func init() {
 
 	// 设置默认值
 	setDefaultValue()
+	logger.Info(spew.Sdump(config))
+	checkConfig()
+}
+
+func checkConfig() {
+	logger.Debug("正在检查配置")
+	ok := true
+	for _, s := range config.Scenes {
+		err := s.SetFirstTache()
+		if err != nil {
+			ok = false
+		}
+	}
+	if !ok {
+		logger.Panic("配置检查不通过，检查配置")
+	}
+	logger.Debug("配置检查结束")
 }
 func getFilePath() {
 	ex, err := os.Executable()
@@ -67,13 +122,14 @@ func getFilePath() {
 }
 
 func setLogger() {
+	os.Setenv("RUN_MODE", "production")
 	mateConf, err := logrus_mate.LoadLogrusMateConfig(fmt.Sprintf("%s/%s", filepath, "config/log.config"))
 	if err != nil {
-		panic(fmt.Errorf("can not read log config fileL: %s", err))
+		panic(fmt.Errorf("can not read log config file: %s", err))
 	}
 	newMate, err := logrus_mate.NewLogrusMate(mateConf)
 	if err != nil {
-		panic(fmt.Errorf("can not read log config fileL: %s", err))
+		panic(fmt.Errorf("can not read log config file: %s", err))
 	}
 	logger = newMate.Logger("main")
 }
